@@ -152,7 +152,7 @@ class BotOperation(object):
                         "Password: " + new_bot.password + "\n"
                         "Port: " + str(new_bot.port) + "\n"
                         "Bot type: " + new_bot.type + "\n"
-                    )
+                        )
             elif userinput.__contains__("get all"):
                 print(self.BOTNET.botnet)
             elif userinput.__contains__("select"):
