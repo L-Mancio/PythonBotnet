@@ -38,9 +38,9 @@ class BotNet(object):
             else:
                 print("Can't remove this bot since it is still connected, try using bot functions to disconnect it, then try again")
 
-    def addbot(self, botuniquename, bot):
-        self.botnet[botuniquename].add(bot)
-        print("adding bot of type " + bot.type + " to " + botuniquename)
+    def addbot(self, bot):
+        self.botnet[bot.uniquename].append(bot)
+        print("adding bot of type " + bot.type + " to " + bot.uniquename)
 
 
     def disconnectAllBots(self):
@@ -103,7 +103,7 @@ class Bot(object):
         print("Bot Connection Closed by user")
 
 
-
+'''
 class BotOperation(object):
     def __init__(self, botlist, host_ip, username, password, port):
         #build botnet
@@ -114,21 +114,19 @@ class BotOperation(object):
     def startBot(self):
         while True:
             userinput = input("Would you like to start ")
-
-
-
+'''
 
 
 def main():
     botnet = BotNet()
+    mininetBot = Bot("mininetbot", "192.168.1.101", "mininet", "mininet", 22)
+    mininetBot.SSHconnect()
+    botnet.addbot(mininetBot)
 
-    mininetBot = Bot("192.168.1.101", "mininet", "mininet", port=22)
-
-    botnet.addBot(mininetBot.username, mininetBot)
-
-    stdin, stdout, stderr = mininetBot.bot_client.exec_command("ls")
-
+    stdin, stdout, stderr = mininetBot.sshbot_client.exec_command("ls")
     print(stdout.readlines())
+
+    print(botnet.botnet)
 
 
 if __name__ == '__main__':
