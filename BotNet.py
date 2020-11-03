@@ -41,8 +41,13 @@ class BotNet(object):
                     "Can't remove this bot since it is still connected, try using bot functions to disconnect it, then try again")
 
     def addbot(self, bot):
+        for bots in self.botnet[bot.uniquename]:
+            if bot.botname == bots.botname:
+                print("can't create bot, already here")
+                return False
         self.botnet[bot.uniquename].append(bot)
-        print("adding bot of type " + bot.type + " to " + bot.uniquename)
+        return True
+
 
     def disconnectAllBots(self):
         for botuniquename, botlist in self.botnet.items():
@@ -55,13 +60,7 @@ class BotNet(object):
             del self.botnet[botname]
         print("All bots disconnected and deleted")
 
-    '''    
-    def getAllBots(self):
-        all_bots = {}
-        for botuniquename, botlist in self.botnet.items():
-            for bot in botlist:
-                all_bots[bot.botname] = bot
-        print("list of connected bots: " + str(all_bots.keys()))'''
+
 
     def getConnectedBots(self):
         connected = {}
@@ -143,17 +142,17 @@ class BotOperation(object):
             elif userinput.__contains__("create"):
                 args = getargs(userinput)
                 new_bot = Bot(args[0], args[1], args[2], args[3], args[4])
-                self.BOTNET.addbot(new_bot)
-                print(
-                    "following bot created: \n\n"
-                    "Unique name: " + new_bot.uniquename + "\n"
-                    "Bot name: " + new_bot.botname + "\n"
-                    "On host ip: " + new_bot.host_ip + "\n"
-                    "Username: " + new_bot.username + "\n"
-                    "Password: " + new_bot.password + "\n"
-                    "Port: " + str(new_bot.port) + "\n"
-                    "Bot type: " + new_bot.type + "\n"
-                )
+                if self.BOTNET.addbot(new_bot):
+                    print(
+                        "following bot created: \n\n"
+                        "Unique name: " + new_bot.uniquename + "\n"
+                        "Bot name: " + new_bot.botname + "\n"
+                        "On host ip: " + new_bot.host_ip + "\n"
+                        "Username: " + new_bot.username + "\n"
+                        "Password: " + new_bot.password + "\n"
+                        "Port: " + str(new_bot.port) + "\n"
+                        "Bot type: " + new_bot.type + "\n"
+                    )
             elif userinput.__contains__("get all"):
                 print(self.BOTNET.botnet)
             elif userinput.__contains__("select"):
@@ -161,25 +160,34 @@ class BotOperation(object):
                 #if specific bot contained in list of uniquebot
                 for bot in self.BOTNET.botnet[args[0]]:
                     if bot.type == args[1]:
-                        userinput = input(args[1] + args[0] + " ready to go, enter command: \n")
+                        userinput = input(args[1] + args[0] + " ready to go, enter command: \n" + bot.botname + "$ ")
                         self.operateBot(userinput, bot)
+
                     else:
                         print("this bot doesn't exist, create it with the create command, '?' for more info")
 
 
 
     def operateBot(self, userinput, bot):
-        shell = False
+
         if userinput.__contains__("connect"):
             bot.SSHconnect()
             print("CONNECTED!")
-            shell = True
-        if shell:
-            userinput = input("you are in unix shell, give unix command: ")
+        if userinput.__contains__("who?"):
+            print(bot)
+            userinput = input(bot.botname + "$ ")
+            self.operateBot(userinput, bot)
+        if userinput.__contains__("exit"):
+            self.startBot()
+
+        while True:
+            userinput = input("shell$ ")
+            if userinput == "exit":
+                bot.disconnectSSHbot()
+                userinput = input(bot.botname + "$ ")
+                self.operateBot(userinput, bot)
             stdin, stdout, stderr = bot.sshbot_client.exec_command(userinput)
-            print(stdout)
-            userinput = input("give unix command to bot: ")
-        self.operateBot(userinput, bot)
+            print(stdout.readlines())
 
         #fix max recursion depth error
 
@@ -196,8 +204,9 @@ class BotOperation(object):
             "get all\n"
             "get connected\n"
             "get disconnected\n"
-            "--------------------- FROM SELECTED BOT------------------\n"
-            "connect"
+            "--------------------- BOT COMMANDS------------------\n"
+            "connect\n"
+            "who \n"
         )
 
 
@@ -215,7 +224,7 @@ def getargs(input):
 
 def main():
 
-    botnet = BotNet()
+    """botnet = BotNet()
     mininetBot = Bot("mininetbot", "192.168.1.101", "mininet", "mininet", 22)
     mininetBot.SSHconnect()
     botnet.addbot(mininetBot)
@@ -223,11 +232,11 @@ def main():
     stdin, stdout, stderr = mininetBot.sshbot_client.exec_command("ls")
     print(stdout.readlines())
 
-    print(botnet.botnet)
+    print(botnet.botnet)"""
 
     # create [mininetbot, 192.168.1.101, mininet, mininet, 22]
 
-    #bop = BotOperation()
+    bop = BotOperation()
 
 
 if __name__ == '__main__':
