@@ -1,2 +1,2 @@
-- generalize connect, preferably the program recognizes the bot type and applis correct connecting method
+- generalize connect, preferably the program recognizes the bot type and applies correct connecting method
 - see if there is a better way of cascading ifs
