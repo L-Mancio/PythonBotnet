@@ -48,7 +48,6 @@ class BotNet(object):
         self.botnet[bot.uniquename].append(bot)
         return True
 
-
     def disconnectAllBots(self):
         for botuniquename, botlist in self.botnet.items():
             for bot in botlist:
@@ -59,8 +58,6 @@ class BotNet(object):
         for botname in self.botnet.keys():
             del self.botnet[botname]
         print("All bots disconnected and deleted")
-
-
 
     def getConnectedBots(self):
         connected = {}
@@ -110,19 +107,58 @@ class Bot(object):
         else:
             return self.botname
 
+    def connect(self):
+        if self.type == "ssh":
+            self.SSHconnect()
+        elif self.type == "nc":
+            self.NCConnect()
+
+    def disconnect(self):
+        if self.type == "ssh":
+            self.disconnectSSHbot()
+        elif self.type == "nc":
+            self.disconnectNCbot()
+
     def SSHconnect(self):
+        if self.connected:
+            print("Already Connected")
+            return
         self.sshbot_client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         try:
             self.sshbot_client.connect(self.host_ip, self.port, self.username, self.password)
             self.connected = True
+            print(self.botname + " CONNECTED!")
         except (BadHostKeyException, AuthenticationException, SSHException, socket.error) as e:
             print("Connection Failuire")
             print("error type: " + str(e))
 
+    def NCConnect(self):
+        if self.connected:
+            print("Already Connected")
+            return
+        try:
+            # /k would remain on shell and not terminate
+            os.system("cmd /c nc -lvp" + str(self.port))
+            self.connected = True
+        except:
+            print("Connection Failuire")
+            raise
+
     def disconnectSSHbot(self):
+        if not self.connected:
+            print("Already Disconnected")
+            return
         self.sshbot_client.close()
         self.connected = False
-        print("Bot Connection Closed by user")
+        print("SSH Bot Connection Closed by user")
+
+    def disconnectNCbot(self):
+        if not self.connected:
+            print("Already Disconnected")
+            return
+        # ideally some command to stop
+        self.connected = False
+        print("NC Bot Connection Closed by user")
 
 
 class BotOperation(object):
@@ -133,7 +169,7 @@ class BotOperation(object):
 
     def startBot(self):
         while True:
-            userinput = input("Enter Command: \n")
+            userinput = input("BotNet$ \n")
             if userinput == "?":
                 self.displayCommands()
             elif userinput == "exit":
@@ -152,12 +188,13 @@ class BotOperation(object):
                         "Password: " + new_bot.password + "\n"
                         "Port: " + str(new_bot.port) + "\n"
                         "Bot type: " + new_bot.type + "\n"
-                        )
+                    )
             elif userinput.__contains__("get all"):
                 print(self.BOTNET.botnet)
+
             elif userinput.__contains__("select"):
                 args = getargs(userinput)
-                #if specific bot contained in list of uniquebot
+                # if specific bot contained in list of uniquebot
                 for bot in self.BOTNET.botnet[args[0]]:
                     if bot.type == args[1]:
                         userinput = input(args[1] + args[0] + " ready to go, enter command: \n" + bot.botname + "$ ")
@@ -166,13 +203,10 @@ class BotOperation(object):
                     else:
                         print("this bot doesn't exist, create it with the create command, '?' for more info")
 
-
-
     def operateBot(self, userinput, bot):
 
         if userinput.__contains__("connect"):
-            bot.SSHconnect()
-            print("CONNECTED!")
+            bot.connect()
         if userinput.__contains__("who?"):
             print(bot)
             userinput = input(bot.botname + "$ ")
@@ -180,16 +214,16 @@ class BotOperation(object):
         if userinput.__contains__("exit"):
             self.startBot()
 
-        while True:
+        while bot.connected:
             userinput = input("shell$ ")
-            if userinput == "exit":
-                bot.disconnectSSHbot()
+            if userinput == "disconnect":
+                bot.disconnect()
                 userinput = input(bot.botname + "$ ")
                 self.operateBot(userinput, bot)
             stdin, stdout, stderr = bot.sshbot_client.exec_command(userinput)
             print(stdout.readlines())
 
-        #fix max recursion depth error
+        # fix max recursion depth error
 
     @staticmethod
     def displayCommands():
@@ -206,6 +240,7 @@ class BotOperation(object):
             "get disconnected\n"
             "--------------------- BOT COMMANDS------------------\n"
             "connect\n"
+            "disconnect\n"
             "who \n"
         )
 
@@ -223,7 +258,6 @@ def getargs(input):
 
 
 def main():
-
     """botnet = BotNet()
     mininetBot = Bot("mininetbot", "192.168.1.101", "mininet", "mininet", 22)
     mininetBot.SSHconnect()
@@ -241,5 +275,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
-
