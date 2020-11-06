@@ -89,11 +89,16 @@ class Bot(object):
         self.type = "no type"
         self.botname = ""
 
+        # don't connect here just initialize all needed variables
         if self.port == 22:
             print("initializing ssh bot for " + username)
             self.botname = uniquename + "ssh"
             self.type = "ssh"
             self.sshbot_client = paramiko.SSHClient()
+        elif self.port >= 4444:
+            print("initializing netcat bot for " + username)
+            self.botname = uniquename + "netcat"
+            self.type = "nc"
 
     def __str__(self):
         if not self.botname:
@@ -138,8 +143,11 @@ class Bot(object):
             return
         try:
             # /k would remain on shell and not terminate
-            os.system("cmd /c nc -lvp" + str(self.port))
+            print("starting NetCat Bot, it's a little buggy but hang on tight")
+            os.chdir("C:/Users/lucam/Desktop/nc111nt_safe/")
             self.connected = True
+            os.system("cmd /k nc -lvp" + str(self.port))
+
         except:
             print("Connection Failuire")
             raise
@@ -169,10 +177,10 @@ class BotOperation(object):
 
     def startBot(self):
         while True:
-            userinput = input("BotNet$ \n")
+            userinput = input("BotNet$ ")
             if userinput == "?":
                 self.displayCommands()
-            elif userinput == "exit":
+            elif userinput == "disconnect":
                 print("Peace on the nets bruh!")
                 break
             elif userinput.__contains__("create"):
@@ -182,12 +190,13 @@ class BotOperation(object):
                     print(
                         "following bot created: \n\n"
                         "Unique name: " + new_bot.uniquename + "\n"
-                        "Bot name: " + new_bot.botname + "\n"
-                        "On host ip: " + new_bot.host_ip + "\n"
-                        "Username: " + new_bot.username + "\n"
-                        "Password: " + new_bot.password + "\n"
-                        "Port: " + str(new_bot.port) + "\n"
-                        "Bot type: " + new_bot.type + "\n"
+                                                               "Bot name: " + new_bot.botname + "\n"
+                                                                                                "On host ip: " + new_bot.host_ip + "\n"
+                                                                                                                                   "Username: " + new_bot.username + "\n"
+                                                                                                                                                                     "Password: " + new_bot.password + "\n"
+                                                                                                                                                                                                       "Port: " + str(
+                            new_bot.port) + "\n"
+                                            "Bot type: " + new_bot.type + "\n"
                     )
             elif userinput.__contains__("get all"):
                 print(self.BOTNET.botnet)
@@ -238,6 +247,7 @@ class BotOperation(object):
             "get all\n"
             "get connected\n"
             "get disconnected\n"
+            "disconnect\n"
             "--------------------- BOT COMMANDS------------------\n"
             "connect\n"
             "disconnect\n"
@@ -268,9 +278,19 @@ def main():
 
     print(botnet.botnet)"""
 
-    # create [mininetbot, 192.168.1.101, mininet, mininet, 22]
+    # create [mininetbot, 192.168.1.118, mininet, mininet, 22]
+    # create [mininetbot, 192.168.1.118, mininet, mininet, 4444]
 
-    bop = BotOperation()
+    # botnet = BotNet()
+    # mininetBot = Bot("mininetbot", "192.168.1.101", "mininet", "mininet", 4444)
+    # botnet.addbot(mininetBot)
+    # mininetBot.connect()
+
+    # print(stdout.readlines())
+
+    # print(botnet.botnet)
+
+    BotOp = BotOperation()
 
 
 if __name__ == '__main__':

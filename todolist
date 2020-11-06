@@ -1,2 +1,1 @@
-- generalize connect, preferably the program recognizes the bot type and applis correct connecting method
-- see if there is a better way of cascading ifs
+- netcat giving issues, when i exit from shell i'd like to return to startbot() in BotOperation, probably needs to be forked
