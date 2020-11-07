@@ -1,5 +1,5 @@
 from Botnet.Bot import Bot
-from Botnet.oldFiles.BotNet import BotNet
+from Botnet.BotNet import BotNet
 
 
 def getargs(commandinput):
@@ -24,10 +24,12 @@ class BotOperation(object):
         while True:
             userinput = input("BotNet$ ")
             if userinput == "?":
-                self.displayCommands()
+                self.displayBotNetCommands()
+
             elif userinput == "disconnect":
                 print("Peace on the nets bruh!")
                 break
+
             elif userinput.__contains__("create"):
                 args = getargs(userinput)
                 new_bot = Bot(args[0], args[1], args[2], args[3], args[4])
@@ -42,8 +44,13 @@ class BotOperation(object):
                         "Port: " + str(new_bot.port) + "\n"
                         "Bot type: " + new_bot.type + "\n"
                     )
+
             elif userinput.__contains__("get all"):
                 print(self.BOTNET.botnet)
+            elif userinput.__contains__("get connected"):
+                self.BOTNET.getConnectedBots()
+            elif userinput.__contains__("get disconnected"):
+                self.BOTNET.getDisconnectedBots()
 
             elif userinput.__contains__("select"):
                 args = getargs(userinput)
@@ -52,19 +59,24 @@ class BotOperation(object):
                     if bot.type == args[1]:
                         userinput = input(args[1] + args[0] + " ready to go, enter command: \n" + bot.botname + "$ ")
                         self.operateBot(userinput, bot)
-
-                    else:
-                        print("this bot doesn't exist, create it with the create command, '?' for more info")
+                print("this bot doesn't exist, create it with the create command, '?' for more info")
 
     def operateBot(self, userinput, bot):
 
-        if userinput.__contains__("connect"):
-            bot.connect()
-        if userinput.__contains__("who?"):
+
+        if userinput == "connect":
+            bot.connect(self)
+
+        elif userinput.__contains__("who?"):
             print(bot)
             userinput = input(bot.botname + "$ ")
             self.operateBot(userinput, bot)
-        if userinput.__contains__("exit"):
+
+        elif userinput == "?":
+            self.displayBotCommands()
+            print("da implementare")
+
+        elif userinput.__contains__("exit"):
             self.startBot()
 
         while bot.connected:
@@ -73,13 +85,19 @@ class BotOperation(object):
                 bot.disconnect()
                 userinput = input(bot.botname + "$ ")
                 self.operateBot(userinput, bot)
+            if userinput == "lightdisc":
+                userinput = input(bot.botname + "$ ")
+                self.operateBot(userinput, bot)
             stdin, stdout, stderr = bot.sshbot_client.exec_command(userinput)
             print(stdout.readlines())
 
+        else:
+            userinput = input("inexistent command provided, get available commands with '?'\n" + bot.botname + "$")
+            self.operateBot(userinput, bot)
         # fix max recursion depth error
 
     @staticmethod
-    def displayCommands():
+    def displayBotNetCommands():
         print(
             "---------------------BOTNET COMMANDS---------------------\n"
             "create [uniquename, host_ip, username, password, port]\n"
@@ -92,8 +110,16 @@ class BotOperation(object):
             "get connected\n"
             "get disconnected\n"
             "disconnect\n"
+        )
+
+    @staticmethod
+    def displayBotCommands():
+        print(
             "--------------------- BOT COMMANDS------------------\n"
             "connect\n"
             "disconnect\n"
             "who \n"
         )
+'''
+ # create [mininetbot, 192.168.1.118, mininet, mininet, 22]
+'''

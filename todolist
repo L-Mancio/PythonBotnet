@@ -1,1 +1,2 @@
 - netcat giving issues, when i exit from shell i'd like to return to startbot() in BotOperation, probably needs to be forked
+- on check if input == ?, check if it is the only string present in userinput to avoid conflict with "who?"

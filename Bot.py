@@ -2,6 +2,9 @@ import os
 import socket
 import paramiko
 from paramiko import BadHostKeyException, AuthenticationException, SSHException
+import threading
+
+
 
 class Bot(object):
     def __init__(self, uniquename, host_ip, username, password, port):
@@ -37,11 +40,11 @@ class Bot(object):
         else:
             return self.botname
 
-    def connect(self):
+    def connect(self, BotOp):
         if self.type == "ssh":
             self.SSHconnect()
         elif self.type == "nc":
-            self.NCConnect()
+            self.NCConnect(BotOp)
 
     def disconnect(self):
         if self.type == "ssh":
@@ -62,13 +65,15 @@ class Bot(object):
             print("Connection Failuire")
             print("error type: " + str(e))
 
-    def NCConnect(self):
+    def NCConnect(self, BotOp):
         if self.connected:
             print("Already Connected")
             return
         try:
             # /k would remain on shell and not terminate
-            print("starting NetCat Bot, it's a little buggy but hang on tight")
+            userinput = input("starting NetCat Bot, it's a little buggy but are you sure you want to continue?\n It might close out after exiting reverse shell (y/n): ")
+            if userinput.lower() != "y":
+                return
             os.chdir("C:/Users/lucam/Desktop/nc111nt_safe/")
             self.connected = True
             os.system("cmd /k nc -lvp" + str(self.port))
